@@ -1,0 +1,39 @@
+.welcome {
+  margin-top: 5%;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  h1 {
+    text-align: center;
+    color: #0766ad;
+  }
+  .signIn,
+  .signUp {
+    h2 {
+      color: #0766ad;
+    }
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    form {
+      label {
+        margin-top: 10px;
+      }
+      input {
+        margin-top: 5px;
+      }
+      button {
+        margin-top: 10px;
+      }
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    button {
+      margin-top: 10px;
+    }
+  }
+}
