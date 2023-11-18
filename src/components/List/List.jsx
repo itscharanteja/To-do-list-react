@@ -7,19 +7,30 @@ const List = () => {
       id: 12,
       task: "newTask",
       completed: false,
+      time: "12:00",
+      priority: "🔴",
     },
     {
       id: 34,
       task: "newTask1234",
       completed: false,
+      time: "3:00",
+      priority: "🟢",
     },
   ]);
   const [newTask, setNewTask] = useState("");
   const [time, setTime] = useState("Morning");
+  const [newTime, setNewTime] = useState("");
+  const [newPriority, setNewPriority] = useState("High");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editedTask, setEditedTask] = useState("");
-  const hours = new Date().getHours();
+  const [showAddFields, setShowAddFields] = useState(false);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [deletedTasks, setDeletedTasks] = useState([]);
+
   useEffect(() => {
+    const hours = new Date().getHours();
+
     if (hours >= 6 && hours < 12) {
       setTime("Morning");
     } else if (hours >= 12 && hours < 16) {
@@ -53,38 +64,61 @@ const List = () => {
   }
 
   const addTask = () => {
-    if (newTask.trim() === "") {
-      alert("Enter a task to add!");
+    setShowAddFields(true);
+  };
+  const saveTask = () => {
+    if (
+      newTask.trim() === "" ||
+      newTime.trim() === "" ||
+      newPriority.trim() === ""
+    ) {
+      alert("Enter all task details!");
+      return;
     }
-    if (newTask.trim() !== "") {
-      const newTaskItem = {
-        id: Date.now(),
-        task: newTask,
-        completed: false,
-      };
 
-      setTasks([...tasks, newTaskItem]);
-      setNewTask("");
-    }
+    const newTaskItem = {
+      id: Date.now(),
+      task: newTask,
+      completed: false,
+      time: newTime,
+      priority: newPriority,
+    };
+
+    setTasks([...tasks, newTaskItem]);
+    setNewTask("");
+    setNewTime("");
+    setNewPriority("🔴");
+    setShowAddFields(false);
   };
 
   const deleteTask = (taskId) => {
     const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    const taskToDelete = tasks.find((task) => task.id === taskId);
+
+    if (taskToDelete) {
+      setDeletedTasks([...deletedTasks, taskToDelete]);
+    }
+
     setTasks(updatedTasks);
   };
 
   const toggleTaskCompletion = (taskId) => {
+    console.log(completedTasks);
     const updatedTasks = tasks.map((task) =>
       task.id === taskId ? { ...task, completed: !task.completed } : task
     );
     setTasks(updatedTasks);
 
-    // setTimeout(() => {
-    //   const taskToDelete = updatedTasks.find((task) => taskId === task.id);
-    //   if (taskToDelete && taskToDelete.completed) {
-    //     deleteTask(taskId);
-    //   }
-    // }, 2000);
+    const taskToMove = tasks.find((task) => task.id === taskId);
+
+    if (taskToMove && taskToMove.completed) {
+      setCompletedTasks([...completedTasks, taskToMove]);
+    } else {
+      const updatedCompletedTasks = completedTasks.filter(
+        (task) => task.id !== taskId
+      );
+      setCompletedTasks(updatedCompletedTasks);
+    }
   };
 
   const handleEdit = (taskId, taskContent) => {
@@ -138,7 +172,7 @@ const List = () => {
                       textDecoration: task.completed ? "line-through" : "none",
                     }}
                   >
-                    {task.task}
+                    {task.task} - {task.time} - {task.priority}
                   </span>
                 </>
               )}
@@ -149,23 +183,63 @@ const List = () => {
                 }}
                 className="btn"
               >
-                <img src="assets/edit.png" alt="*" />
+                <img src="assets/edit.png" alt="Edit" />
               </button>
               <button onClick={() => deleteTask(task.id)} className="btn">
-                <img src="assets/delete.png" alt="*" />
+                <img src="assets/delete.png" alt="Delete" />
               </button>
             </li>
           ))}
         </ul>
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add a new task"
-        />
-        <button onClick={addTask} className="button">
-          Add Task
-        </button>
+        {completedTasks.length > 0 && (
+          <div className="completed-tasks">
+            <h2>Completed Tasks</h2>
+            <ul>
+              {completedTasks.map((task) => (
+                <li key={task.id} className="completed-task-item">
+                  {/* Display completed tasks */}
+                  {task.task}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {showAddFields && (
+          <div className="addTaskFields">
+            <input
+              type="text"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Add a new task"
+            />
+            <input
+              type="time"
+              value={newTime}
+              onChange={(e) => setNewTime(e.target.value)}
+              placeholder="Select time"
+            />
+            <select
+              value={newPriority}
+              onChange={(e) => setNewPriority(e.target.value)}
+              className="priority"
+            >
+              <option value="🔴">High</option>
+              <option value="🟠">Medium</option>
+              <option value="🟢">Low</option>
+            </select>
+            <button onClick={saveTask} className="button">
+              Save Task
+            </button>
+          </div>
+        )}
+
+        {/* Button to show/hide the input fields */}
+        {!showAddFields && (
+          <button onClick={addTask} className="button">
+            Add Task
+          </button>
+        )}
       </div>
     </div>
   );
