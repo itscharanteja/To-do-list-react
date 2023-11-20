@@ -2,26 +2,11 @@ import React, { useEffect, useState } from "react";
 import "./List.scss";
 
 const List = () => {
-  const [tasks, setTasks] = useState([
-    {
-      id: 12,
-      task: "newTask",
-      completed: false,
-      time: "12:00",
-      priority: "🔴",
-    },
-    {
-      id: 34,
-      task: "newTask1234",
-      completed: false,
-      time: "3:00",
-      priority: "🟢",
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [time, setTime] = useState("Morning");
   const [newTime, setNewTime] = useState("");
-  const [newPriority, setNewPriority] = useState("High");
+  const [newPriority, setNewPriority] = useState("🔴");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editedTask, setEditedTask] = useState("");
   const [showAddFields, setShowAddFields] = useState(false);
@@ -29,6 +14,7 @@ const List = () => {
   const [deletedTasks, setDeletedTasks] = useState([]);
 
   useEffect(() => {
+    // For Greeting the user
     const hours = new Date().getHours();
 
     if (hours >= 6 && hours < 12) {
@@ -42,6 +28,23 @@ const List = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // For Storing the saved tasks to local storage
+
+    const storedTasks = localStorage.getItem("tasks");
+    if (storedTasks) {
+      try {
+        // Attempt to parse the retrieved data
+        const parsedTasks = JSON.parse(storedTasks);
+        setTasks(parsedTasks);
+      } catch (error) {
+        // Handle parsing error
+        console.error("Error parsing tasks:", error);
+      }
+    }
+  }, []);
+
   let greetingImage = null;
 
   // Set the image based on the time of day
@@ -83,8 +86,9 @@ const List = () => {
       time: newTime,
       priority: newPriority,
     };
-
-    setTasks([...tasks, newTaskItem]);
+    const updatedTasks = [...tasks, newTaskItem];
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    setTasks(updatedTasks);
     setNewTask("");
     setNewTime("");
     setNewPriority("🔴");
@@ -96,6 +100,14 @@ const List = () => {
     const taskToDelete = tasks.find((task) => task.id === taskId);
 
     if (taskToDelete) {
+      const storedTasks = localStorage.getItem("tasks");
+      if (storedTasks) {
+        const parsedTasks = JSON.parse(storedTasks);
+        const updateStoredTasks = parsedTasks.filter(
+          (task) => task.id !== taskId
+        );
+        localStorage.setItem("tasks", JSON.stringify(updateStoredTasks));
+      }
       setDeletedTasks([...deletedTasks, taskToDelete]);
     }
 
@@ -130,9 +142,17 @@ const List = () => {
     const updatedTasks = tasks.map((task) =>
       task.id === editingTaskId ? { ...task, task: editedTask } : task
     );
+
+    const saveTask = [updatedTasks];
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    console.log(saveTask);
     setTasks(updatedTasks);
     setEditingTaskId(null);
     setEditedTask("");
+  };
+
+  const clearTasks = () => {
+    localStorage.clear();
   };
 
   return (
@@ -238,6 +258,11 @@ const List = () => {
         {!showAddFields && (
           <button onClick={addTask} className="button">
             Add Task
+          </button>
+        )}
+        {tasks.length > 0 && (
+          <button onClick={clearTasks} className="clearTasks">
+            Clear all tasks
           </button>
         )}
       </div>
